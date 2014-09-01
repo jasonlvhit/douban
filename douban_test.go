@@ -27,6 +27,15 @@ var scopes = map[string]([]string){
 	"event": {"event_basic_r", "event_basic_w", "event_drama_r", "event_drama_w"},
 }
 
+func getAllScopes() []string {
+	var allscopes []string
+	for _, v := range scopes {
+		for _, v1 := range v {
+			allscopes = append(allscopes, v1)
+		}
+	}
+}
+
 var client = NewClient(TEST_API_KEY, TEST_API_SECRET, TEST_REDIRECT_URI, scopes["common"])
 
 func TestNewClient(t *testing.T) {
