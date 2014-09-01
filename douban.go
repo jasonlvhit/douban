@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -27,8 +28,42 @@ func NewClient(API_KEY, API_SECRET, redrict_url string, scope []string) *Client 
 
 func (c *Client) get(url string) []byte {
 	client := &http.Client{}
-
+	fmt.Println(API_HOST + url)
 	req, err := http.NewRequest("GET", API_HOST+url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", c.access_token["access_token"].(string))
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	content, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	return content
+}
+
+/*
+
+func (c *Client) post(purl string, data map[string]([]string)) []byte {
+	http.Header.Set("jj", "ss")
+	resp, err := http.PostForm(API_HOST+purl, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	content, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	return content
+}
+
+*/
+
+func (c *Client) post(purl string, data map[string]([]string)) []byte {
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", API_HOST+purl, strings.NewReader(url.Values(data).Encode()))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,12 +84,19 @@ func (c *Client) AuthorizeUrl() string {
 		"client_id":     c.APT_KEY,
 		"redirect_uri":  c.redirct_url,
 		"response_type": "code",
-		"scope":         strings.Join(c.scope, ","),
+		"scope":         strings.Join(c.scope, "+"),
 	})
 }
 
-func (c *Client) AuthWithToken(token map[string]interface{}) {
-	c.access_token = token
+func (c *Client) AuthWithToken(token interface{}) {
+	switch token.(type) {
+	case string:
+		c.access_token = map[string]interface{}{
+			"access_token": token.(string),
+		}
+	case map[string]interface{}:
+		c.access_token = token.(map[string]interface{})
+	}
 }
 
 func (c *Client) AuthWithCode(code string) {
@@ -96,49 +138,49 @@ func (c *Client) Me() []byte {
 	return c.get("/v2/user/~me")
 }
 
-func (c *Client) GetUserbyId(id int32) []byte {
-	return c.get("/v2/user/" + string(id))
+func (c *Client) GetUserbyId(id int) []byte {
+	return c.get("/v2/user/" + strconv.Itoa(id))
 }
 
 func (c *Client) GetUserbyName(username string) []byte {
 	return c.get("/v2/user/" + username)
 }
 
-func (c *Client) SearchUserByKeywords(keywords []string, start, count int32) []byte {
+func (c *Client) SearchUserByKeywords(keywords []string, start, count int) []byte {
 	return c.get(Urlencode("/v2/user", map[string]string{
 		"q":     strings.Join(keywords, "+"),
-		"start": string(start),
-		"count": string(count),
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
 	}))
 }
 
 // Book
-func (c *Client) GetBookById(id int32) []byte {
-	return c.get("/v2/book/" + string(id))
+func (c *Client) GetBookById(id int) []byte {
+	return c.get("/v2/book/" + strconv.Itoa(id))
 }
 
 func (c *Client) GetBookByISBN(isbn string) []byte {
 	return c.get("/v2/book/isbn/" + isbn)
 }
 
-func (c *Client) SearchBookByKeywords(keywords []string, start, count int32) []byte {
+func (c *Client) SearchBookByKeywords(keywords []string, start, count int) []byte {
 	return c.get(Urlencode("/v2/book/search", map[string]string{
 		"q":     strings.Join(keywords, "+"),
-		"start": string(start),
-		"count": string(count),
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
 	}))
 }
 
-func (c *Client) SearchBookByTag(tag string, start, count int32) []byte {
+func (c *Client) SearchBookByTag(tag string, start, count int) []byte {
 	return c.get(Urlencode("/v2/book/search", map[string]string{
 		"tag":   tag,
-		"start": string(start),
-		"count": string(count),
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
 	}))
 }
 
-func (c *Client) GetTagsOfBookById(id int32) []byte {
-	return c.get("/v2/book/" + string(id) + "/tags")
+func (c *Client) GetTagsOfBookById(id int) []byte {
+	return c.get("/v2/book/" + strconv.Itoa(id) + "/tags")
 }
 
 /*
@@ -166,64 +208,64 @@ func (c *Client) GetUserAnnotations(username string) []byte {
 }
 
 // http://developers.douban.com/wiki/?title=book_v2#get_book_annotations
-func (c *Client) GetBookAnnotations(book_id int32) []byte {
-	return c.get("/v2/book/" + string(book_id) + "/annotations")
+func (c *Client) GetBookAnnotations(book_id int) []byte {
+	return c.get("/v2/book/" + strconv.Itoa(book_id) + "/annotations")
 }
 
 // http://developers.douban.com/wiki/?title=book_v2#get_annotation
-func (c *Client) GetAnnotationById(id int32) []byte {
-	return c.get("/v2/book/annotation/" + string(id))
+func (c *Client) GetAnnotationById(id int) []byte {
+	return c.get("/v2/book/annotation/" + strconv.Itoa(id))
 }
 
 // Movie
 
-func (c *Client) GetMovieById(id int32) []byte {
-	return c.get("/v2/movie/subject/" + string(id))
+func (c *Client) GetMovieById(id int) []byte {
+	return c.get("/v2/movie/subject/" + strconv.Itoa(id))
 }
 
-func (c *Client) GetMoviePhotosById(id int32) []byte {
-	return c.get("/v2/movie/subject/" + string(id) + "/photos")
+func (c *Client) GetMoviePhotosById(id int) []byte {
+	return c.get("/v2/movie/subject/" + strconv.Itoa(id) + "/photos")
 }
 
 //http://developers.douban.com/wiki/?title=movie_v2#reviews
-func (c *Client) GetMovieReviewsById(id int32) []byte {
-	return c.get("/v2/movie/subject/" + string(id) + "/reviews")
+func (c *Client) GetMovieReviewsById(id int) []byte {
+	return c.get("/v2/movie/subject/" + strconv.Itoa(id) + "/reviews")
 }
 
 //http://developers.douban.com/wiki/?title=movie_v2#comments
-func (c *Client) GetMovieCommentsById(id int32) []byte {
-	return c.get("/v2/movie/subject/" + string(id) + "/comments")
+func (c *Client) GetMovieCommentsById(id int) []byte {
+	return c.get("/v2/movie/subject/" + strconv.Itoa(id) + "/comments")
 }
 
 //http://developers.douban.com/wiki/?title=movie_v2#celebrity
-func (c *Client) GetCelebrityById(id int32) []byte {
-	return c.get("/v2/movie/celebrity/" + string(id))
+func (c *Client) GetCelebrityById(id int) []byte {
+	return c.get("/v2/movie/celebrity/" + strconv.Itoa(id))
 }
 
 //http://developers.douban.com/wiki/?title=movie_v2#celebrity-photos
-func (c *Client) GetCelebrityPhotosById(id int32) []byte {
-	return c.get("/v2/movie/celebrity/" + string(id) + "/photos")
+func (c *Client) GetCelebrityPhotosById(id int) []byte {
+	return c.get("/v2/movie/celebrity/" + strconv.Itoa(id) + "/photos")
 }
 
 //http://developers.douban.com/wiki/?title=movie_v2#works
-func (c *Client) GetCelebrityWorksById(id int32) []byte {
-	return c.get("/v2/movie/celebrity/" + string(id) + "/works")
+func (c *Client) GetCelebrityWorksById(id int) []byte {
+	return c.get("/v2/movie/celebrity/" + strconv.Itoa(id) + "/works")
 }
 
 //http://developers.douban.com/wiki/?title=movie_v2#search
-func (c *Client) SearchMovieByKeywords(keywords []string, start, count int32) []byte {
+func (c *Client) SearchMovieByKeywords(keywords []string, start, count int) []byte {
 	return c.get(Urlencode("/v2/movie/search", map[string]string{
 		"q":     strings.Join(keywords, "+"),
-		"start": string(start),
-		"count": string(count),
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
 	}))
 }
 
-func (c *Client) SearchMovieByTag(tag string, start, count int32) []byte {
+func (c *Client) SearchMovieByTag(tag string, start, count int) []byte {
 	return c.get(Urlencode("/v2/movie/search", map[string]string{
 		"tag":   tag,
-		"start": string(start),
-		"count": string(count),
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
 	}))
 }
 
@@ -255,4 +297,40 @@ func (c *Client) US_Box() []byte {
 //http://developers.douban.com/wiki/?title=movie_v2#new-movies
 func (c *Client) NewMovies() []byte {
 	return c.get("/v2/movie/new_movies")
+}
+
+//http://developers.douban.com/wiki/?title=music_v2#get_music
+func (c *Client) GetMusicById(id int) []byte {
+	return c.get("/v2/music/" + strconv.Itoa(id))
+}
+
+func (c *Client) SearchMusicByKeywords(keywords []string, start, count int) []byte {
+	return c.get(Urlencode("/v2/music/search", map[string]string{
+		"q":     strings.Join(keywords, "+"),
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+func (c *Client) SearchMusicByTag(tag string, start, count int) []byte {
+	return c.get(Urlencode("/v2/music/search", map[string]string{
+		"tag":   tag,
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+//http://developers.douban.com/wiki/?title=music_v2#get_music_tags
+func (c *Client) GetMusicTagsById(id int) []byte {
+	return c.get("/v2/music/" + strconv.Itoa(id) + "/tags")
+}
+
+//http://developers.douban.com/wiki/?title=music_v2#post_music_review
+func (c *Client) PostMusicReview(id int, title, content string, rating int) []byte {
+	return c.post("/v2/music/reviews", map[string]([]string){
+		"music":   {strconv.Itoa(id)},
+		"title":   {title},
+		"content": {content},
+		"rating":  {strconv.Itoa(rating)},
+	})
 }
