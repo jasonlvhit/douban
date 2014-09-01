@@ -161,16 +161,98 @@ func (c *Client) GetBookCollectionOfUser(book_id, username string) []byte {
 }
 
 // http://developers.douban.com/wiki/?title=book_v2#get_user_annotations
-func (c *Client) GetUserAnnotations(username string) {
+func (c *Client) GetUserAnnotations(username string) []byte {
 	return c.get("/v2/book/user/" + username + "/annotations")
 }
 
 // http://developers.douban.com/wiki/?title=book_v2#get_book_annotations
-func (c *Client) GetBookAnnotations(book_id int32) {
+func (c *Client) GetBookAnnotations(book_id int32) []byte {
 	return c.get("/v2/book/" + string(book_id) + "/annotations")
 }
 
 // http://developers.douban.com/wiki/?title=book_v2#get_annotation
-func (c *Client) GetAnnotationById(id int32) {
+func (c *Client) GetAnnotationById(id int32) []byte {
 	return c.get("/v2/book/annotation/" + string(id))
+}
+
+// Movie
+
+func (c *Client) GetMovieById(id int32) []byte {
+	return c.get("/v2/movie/subject/" + string(id))
+}
+
+func (c *Client) GetMoviePhotosById(id int32) []byte {
+	return c.get("/v2/movie/subject/" + string(id) + "/photos")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#reviews
+func (c *Client) GetMovieReviewsById(id int32) []byte {
+	return c.get("/v2/movie/subject/" + string(id) + "/reviews")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#comments
+func (c *Client) GetMovieCommentsById(id int32) []byte {
+	return c.get("/v2/movie/subject/" + string(id) + "/comments")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#celebrity
+func (c *Client) GetCelebrityById(id int32) []byte {
+	return c.get("/v2/movie/celebrity/" + string(id))
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#celebrity-photos
+func (c *Client) GetCelebrityPhotosById(id int32) []byte {
+	return c.get("/v2/movie/celebrity/" + string(id) + "/photos")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#works
+func (c *Client) GetCelebrityWorksById(id int32) []byte {
+	return c.get("/v2/movie/celebrity/" + string(id) + "/works")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#search
+func (c *Client) SearchMovieByKeywords(keywords []string, start, count int32) []byte {
+	return c.get(Urlencode("/v2/movie/search", map[string]string{
+		"q":     strings.Join(keywords, "+"),
+		"start": string(start),
+		"count": string(count),
+	}))
+}
+
+func (c *Client) SearchMovieByTag(tag string, start, count int32) []byte {
+	return c.get(Urlencode("/v2/movie/search", map[string]string{
+		"tag":   tag,
+		"start": string(start),
+		"count": string(count),
+	}))
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#nowplaying
+func (c *Client) GetNowplayingMovies() []byte {
+	return c.get("/v2/movie/nowplaying")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#coming
+func (c *Client) GetComingMovies() []byte {
+	return c.get("/v2/movie/coming")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#top250
+func (c *Client) Top250Movies() []byte {
+	return c.get("/v2/movie/top250")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#weekly
+func (c *Client) WeeklyMovies() []byte {
+	return c.get("/v2/movie/weekly")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#us-box
+func (c *Client) US_Box() []byte {
+	return c.get("/v2/movie/us_box")
+}
+
+//http://developers.douban.com/wiki/?title=movie_v2#new-movies
+func (c *Client) NewMovies() []byte {
+	return c.get("/v2/movie/new_movies")
 }
