@@ -139,7 +139,7 @@ func (c *Client) Me() []byte {
 }
 
 func (c *Client) GetUserbyId(id int) []byte {
-	return c.get("/v2/user/" + strconv.Itoa(id))
+	return c.get(fmt.Sprintf("/v2/user/%s", strconv.Itoa(id)))
 }
 
 func (c *Client) GetUserbyName(username string) []byte {
@@ -154,7 +154,39 @@ func (c *Client) SearchUserByKeywords(keywords []string, start, count int) []byt
 	}))
 }
 
-// Book
+func (c *Client) Follow(user_id int) []byte {
+	return c.post("/shuo/v2/friendships/create", map[string]([]string){
+		"user_id": {strconv.Itoa(user_id)},
+	})
+}
+
+func (c *Client) Unfollow(user_id int) []byte {
+	return c.post("shuo/v2/friendships/destroy", map[string]([]string){
+		"user_id": {strconv.Itoa(user_id)},
+	})
+}
+
+func (c *Client) Following(user_id, start, count int) []byte {
+	page := start / count
+	return c.get(Urlencode(fmt.Sprintf("shuo/v2/users/%s/following", strconv.Itoa(user_id)), map[string]string{
+		"page":  strconv.Itoa(page),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+func (c *Client) Followers(user_id, start, count int) []byte {
+	page := start / count
+	return c.get(Urlencode(fmt.Sprintf("shuo/v2/users/%s/followers", strconv.Itoa(user_id)), map[string]string{
+		"page":  strconv.Itoa(page),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+/*
+ Book:豆瓣读书
+ Url
+*/
+
 func (c *Client) GetBookById(id int) []byte {
 	return c.get("/v2/book/" + strconv.Itoa(id))
 }
@@ -217,7 +249,10 @@ func (c *Client) GetAnnotationById(id int) []byte {
 	return c.get("/v2/book/annotation/" + strconv.Itoa(id))
 }
 
-// Movie
+/*
+ Movie:豆瓣电影
+ Url:
+*/
 
 func (c *Client) GetMovieById(id int) []byte {
 	return c.get("/v2/movie/subject/" + strconv.Itoa(id))
@@ -333,4 +368,34 @@ func (c *Client) PostMusicReview(id int, title, content string, rating int) []by
 		"content": {content},
 		"rating":  {strconv.Itoa(rating)},
 	})
+}
+
+// Album
+func (c *Client) GetAlbumById(id int) []byte {
+	return c.get("v2/album/" + strconv.Itoa(id))
+}
+
+func (c *Client) GetUserCreateAlbums(user_id, start, count int) []byte {
+	return c.get(Urlencode("/v2/album/user_created"+strconv.Itoa(user_id), map[string]string{
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+func (c *Client) LikeAblumById(id int) []byte {
+	return c.post("/v2/album/"+strconv.Itoa(id)+"like", map[string]([]string){})
+}
+
+func (c *Client) GetAlbumPhotosById(id, start, count int) []byte {
+	return c.get(Urlencode("/v2/album/"+strconv.Itoa(id)+"/photos", map[string]string{
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+func (c *Client) GetLikedListByUserId(user_id, start, count int) []byte {
+	return c.get(Urlencode("/v2/ablum/user_liked/"+strconv.Itoa(user_id), map[string]string{
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
 }
