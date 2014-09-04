@@ -399,7 +399,11 @@ func (c *Client) PostMusicReview(id int, title, content string, rating int) (cod
 	})
 }
 
-// Album
+/*
+ photo:豆瓣相册API V2
+ URL：http://developers.douban.com/wiki/?title=photo_v2
+*/
+
 func (c *Client) GetAlbumById(id int) (code int, resp_content []byte) {
 	return c.get("v2/album/" + strconv.Itoa(id))
 }
@@ -427,6 +431,164 @@ func (c *Client) GetLikedListByUserId(user_id, start, count int) (code int, resp
 		"start": strconv.Itoa(start),
 		"count": strconv.Itoa(count),
 	}))
+}
+
+// http://developers.douban.com/wiki/?title=photo_v2#get_photo
+// 获取照片
+func (c *Client) GetPhotoById(id int) (code int, resp_content []byte) {
+	return c.get("/v2/photo/" + strconv.Itoa(id))
+}
+
+/*
+ doumail:豆邮API V2
+*/
+
+func (c *Client) GetDoumailById(id int) (code int, resp_content []byte) {
+	return c.get("/v2/doumail/" + strconv.Itoa(id))
+}
+
+func (c *Client) GetInbox(start, count int) (code int, resp_content []byte) {
+	return c.get(Urlencode("/v2/doumail/inbox", map[string]string{
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+func (c *Client) GetOutbox(start, count int) (code int, resp_content []byte) {
+	return c.get(Urlencode("/v2/doumail/outbox", map[string]string{
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+func (c *Client) GetUnread(start, count int) (code int, resp_content []byte) {
+	return c.get(Urlencode("/v2/doumail/inbox/unread", map[string]string{
+		"start": strconv.Itoa(start),
+		"count": strconv.Itoa(count),
+	}))
+}
+
+/*
+ online:豆瓣线上活动API
+ URL：http://developers.douban.com/wiki/?title=online_v2
+*/
+
+//http://developers.douban.com/wiki/?title=online_v2#get
+//获取线上活动
+func (c *Client) GetOnlineById(id int) (code int, resp_content []byte) {
+	return c.get("/v2/online/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#users
+//获取线上活动成员列表
+func (c *Client) GetParticipantsById(id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/online/%s/participants", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#discussions
+//获取线上活动论坛列表
+func (c *Client) GetOnlineDiscussionById(id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/online/%s/discussions", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#list
+//获取线上活动列表
+func (c *Client) GetOnlineList() (code int, resp_content []byte) {
+	return c.get("/v2/onlines")
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#new
+//创建活动
+func (c *Client) CreateOnline(title, desc, begin_time, end_time,
+	related_url, cascade_invite, tags string) (code int, resp_content []byte) {
+	return c.post("v2/onlines", map[string]([]string){
+		"title":          {title},
+		"desc":           {desc},
+		"begin_time":     {begin_time},
+		"end_time":       {end_time},
+		"related_url":    {related_url},
+		"cascade_invite": {cascade_invite},
+		"tags":           {tags},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#update
+//更新线上活动
+func (c *Client) UpdateOnline(id int, title, desc, begin_time, end_time,
+	related_url, cascade_invite, tags string) (code int, resp_content []byte) {
+	return c.put("/v2/online/"+strconv.Itoa(id), map[string]([]string){
+		"title":          {title},
+		"desc":           {desc},
+		"begin_time":     {begin_time},
+		"end_time":       {end_time},
+		"related_url":    {related_url},
+		"cascade_invite": {cascade_invite},
+		"tags":           {tags},
+	})
+}
+
+// http://developers.douban.com/wiki/?title=online_v2#delete
+// 删除线上活动
+func (c *Client) DeleteOnline(id int) (code int, resp_content []byte) {
+	return c.delete("/v2/online/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#join
+//参加线上活动
+func (c *Client) JoinOnline(id int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/online/%s/participants", strconv.Itoa(id)), map[string]([]string){})
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#quit
+func (c *Client) QuitOnline(id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/online/%s/participants", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#like
+//喜欢线上活动
+func (c *Client) LikeOnline(id int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/online/%s/like", strconv.Itoa(id)), map[string]([]string))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#unlike
+//取消喜欢线上活动
+func (c *Client) UnlikeOnline(id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/online/%s/like", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#photos
+//线上活动图片列表
+func (c *Client) GetOnlinePhotos(id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/online/%s/photos", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#upload
+//上传图片
+func (c *Client) UploadOnlinePhoto(id int) /*(code int, resp_content []byte)*/ {
+	/*
+		Album API
+		http://developers.douban.com/wiki/?title=photo_v2#new_photo
+		Not implemented.
+	*/
+	//return c.post(purl, data)
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#post
+//新发讨论
+func (c *Client) NewOnlineDiscussion(target_id int, title, content string) (code int, resp_content []byte) {
+	return c.NewDiscussion("online", target_id, title, content)
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#join_list
+//获取用户参加的线上活动列表
+func (c *Client) GetUserPaticipateOnline(user_id int) (code int, resp_content []byte) {
+	return c.get("/v2/online/user_participated/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=online_v2#owned
+//获取用户创建的线上活动列表
+func (c *Client) GetUserCreateOnline(user_id int) (code int, resp_content []byte) {
+	return c.get("/v2/online/user_created/" + strconv.Itoa(id))
 }
 
 /*
@@ -457,8 +619,8 @@ func (c *Client) DeleteDiscussionById(id int) (code int, resp_content []byte) {
 
 // http://developers.douban.com/wiki/?title=discussion_v2#new
 // 创建讨论
-func (c *Client) NewDiscussion(target_id int, title, content string) (code int, resp_content []byte) {
-	return c.post(fmt.Sprintf("/v2/target/%s/discussions", strconv.Itoa(target_id)), map[string]([]string){
+func (c *Client) NewDiscussion(target string, target_id int, title, content string) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/%s/%s/discussions", target, strconv.Itoa(target_id)), map[string]([]string){
 		"title":   {title},
 		"content": {content},
 	})
@@ -466,8 +628,8 @@ func (c *Client) NewDiscussion(target_id int, title, content string) (code int, 
 
 // http://developers.douban.com/wiki/?title=discussion_v2#list
 // 获取论坛讨论列表
-func (c *Client) GetDiscussionListById(target_id int) (code int, resp_content []byte) {
-	return c.get(fmt.Sprintf("/v2/target/%s/discussions", strconv.Itoa(target_id)))
+func (c *Client) GetDiscussionListById(target string, target_id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/%s/%s/discussions", target, strconv.Itoa(target_id)))
 
 }
 
@@ -478,8 +640,8 @@ func (c *Client) GetDiscussionListById(target_id int) (code int, resp_content []
 
 // http://developers.douban.com/wiki/?title=comment_v2#list
 // 获取回复列表
-func (c *Client) GetCommentsById(id, start, count int) (code int, resp_content []byte) {
-	return c.get(Urlencode(fmt.Sprintf("/v2/target/%s/comments", strconv.Itoa(id)), map[string]string{
+func (c *Client) GetCommentsById(target string, id, start, count int) (code int, resp_content []byte) {
+	return c.get(Urlencode(fmt.Sprintf("/v2/%s/%s/comments", target, strconv.Itoa(id)), map[string]string{
 		"start": strconv.Itoa(start),
 		"count": strconv.Itoa(count),
 	}))
@@ -487,22 +649,22 @@ func (c *Client) GetCommentsById(id, start, count int) (code int, resp_content [
 
 // http://developers.douban.com/wiki/?title=comment_v2#new
 // 新发回复
-func (c *Client) NewComment(id int, content string) (code int, resp_content []byte) {
-	return c.post(fmt.Sprintf("/v2/target/%s/comments", strconv.Itoa(id)), map[string]([]string){
+func (c *Client) NewComment(target string, id int, content string) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/%s/%s/comments", target, strconv.Itoa(id)), map[string]([]string){
 		"content": {content},
 	})
 }
 
 // http://developers.douban.com/wiki/?title=comment_v2#get
 // 获取单条回复
-func (c *Client) GetCommentById(target_id, comment_id int) (code int, resp_content []byte) {
-	return c.get(fmt.Sprintf("/v2/target/%s/comment/%s", strconv.Itoa(target_id), strconv.Itoa(comment_id)))
+func (c *Client) GetCommentById(target string, target_id, comment_id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/%s/%s/comment/%s", target, strconv.Itoa(target_id), strconv.Itoa(comment_id)))
 }
 
 // http://developers.douban.com/wiki/?title=comment_v2#delete
 // 删除回复
-func (c *Client) DeleteCommentById(target_id, comment_id int) (code int, resp_content []byte) {
-	return c.delete(fmt.Sprintf("/v2/target/%s/comment/%s", strconv.Itoa(target_id), strconv.Itoa(comment_id)))
+func (c *Client) DeleteCommentById(target string, target_id, comment_id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/%s/%s/comment/%s", target, strconv.Itoa(target_id), strconv.Itoa(comment_id)))
 }
 
 /*
