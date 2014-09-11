@@ -216,14 +216,17 @@ func (c *Client) Followers(user_id, start, count int) (code int, resp_content []
  Url
 */
 
+//http://developers.douban.com/wiki/?title=book_v2#get_book
 func (c *Client) GetBookById(id int) (code int, resp_content []byte) {
 	return c.get("/v2/book/" + strconv.Itoa(id))
 }
 
+//http://developers.douban.com/wiki/?title=book_v2#get_isbn_book
 func (c *Client) GetBookByISBN(isbn string) (code int, resp_content []byte) {
 	return c.get("/v2/book/isbn/" + isbn)
 }
 
+//http://developers.douban.com/wiki/?title=book_v2#get_book_search
 func (c *Client) SearchBookByKeywords(keywords []string, start, count int) (code int, resp_content []byte) {
 	return c.get(Urlencode("/v2/book/search", map[string]string{
 		"q":     strings.Join(keywords, "+"),
@@ -232,6 +235,7 @@ func (c *Client) SearchBookByKeywords(keywords []string, start, count int) (code
 	}))
 }
 
+//http://developers.douban.com/wiki/?title=book_v2#get_book_search
 func (c *Client) SearchBookByTag(tag string, start, count int) (code int, resp_content []byte) {
 	return c.get(Urlencode("/v2/book/search", map[string]string{
 		"tag":   tag,
@@ -240,6 +244,7 @@ func (c *Client) SearchBookByTag(tag string, start, count int) (code int, resp_c
 	}))
 }
 
+//http://developers.douban.com/wiki/?title=book_v2#get_book_tags
 func (c *Client) GetTagsOfBookById(id int) (code int, resp_content []byte) {
 	return c.get("/v2/book/" + strconv.Itoa(id) + "/tags")
 }
@@ -276,6 +281,87 @@ func (c *Client) GetBookAnnotations(book_id int) (code int, resp_content []byte)
 // http://developers.douban.com/wiki/?title=book_v2#get_annotation
 func (c *Client) GetAnnotationById(id int) (code int, resp_content []byte) {
 	return c.get("/v2/book/annotation/" + strconv.Itoa(id))
+}
+
+// http://developers.douban.com/wiki/?title=book_v2#post_book_collection
+// 用户收藏图书
+func (c *Client) CollectBookById(id int, status, tags, comment, privacy string, rating int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/book/%s/collection", strconv.Itoa(id)), map[string]([]string){
+		"status":  {status},
+		"tags":    {tags},
+		"comment": {comment},
+		"privacy": {privacy},
+		"rating":  {strconv.Itoa(rating)},
+	})
+}
+
+// http://developers.douban.com/wiki/?title=book_v2#put_book_collection
+// 用户修改对某本图书的收藏
+func (c *Client) UpdateCollectedBookById(id int, status, tags, comment, privacy string, rating int) (code int, resp_content []byte) {
+	return c.put(fmt.Sprintf("/v2/book/%s/collection", strconv.Itoa(id)), map[string]([]string){
+		"status":  {status},
+		"tags":    {tags},
+		"comment": {comment},
+		"privacy": {privacy},
+		"rating":  {strconv.Itoa(rating)},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#delete_book_collection
+//用户删除对某本图书的收藏
+func (c *Client) DeleteBookCollectionById(id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/book/%s/collection", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#post_book_annotation
+//用户给某本图书写笔记
+func (c *Client) MakeAnnotation(id int, content string, page int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/book/%s/annotations", strconv.Itoa(id)), map[string]([]string){
+		"content": {content},
+		"page":    {strconv.Itoa(page)},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#put_annotation
+//用户修改某篇笔记
+func (c *Client) UpdateAnnotationById(id int, content string, page int) (code int, resp_content []byte) {
+	return c.put(fmt.Sprintf("/v2/book/%s/annotations", strconv.Itoa(id)), map[string]([]string){
+		"content": {content},
+		"page":    {strconv.Itoa(page)},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#delete_annotation
+//用户删除某篇笔记
+func (c *Client) DeleteAnnotationById(id int) (code int, resp_content []byte) {
+	return c.delete("/v2/book/annotation/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#post_book_review
+//发表新评论
+func (c *Client) NewBookReview(id int, title, content string, rating int) (code int, resp_content []byte) {
+	return c.post("/v2/book/reviews", map[string]([]string){
+		"book":    {strconv.Itoa(id)},
+		"title":   {title},
+		"content": {content},
+		"rating":  {strconv.Itoa(rating)},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#put_book_review
+//修改评论
+func (c *Client) UpdateReviewOfBook(id int, title, content string, rating int) (code int, resp_content []byte) {
+	return c.put("/v2/book/review/"+strconv.Itoa(id), map[string]([]string){
+		"title":   {title},
+		"content": {content},
+		"rating":  {strconv.Itoa(rating)},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=book_v2#delete_book_review
+//删除评论
+func (c *Client) DeleteReviewOfBook(id int) (code int, resp_content []byte) {
+	return c.delete("/v2/book/review/" + strconv.Itoa(id))
 }
 
 /*
@@ -547,7 +633,7 @@ func (c *Client) QuitOnline(id int) (code int, resp_content []byte) {
 //http://developers.douban.com/wiki/?title=online_v2#like
 //喜欢线上活动
 func (c *Client) LikeOnline(id int) (code int, resp_content []byte) {
-	return c.post(fmt.Sprintf("/v2/online/%s/like", strconv.Itoa(id)), map[string]([]string))
+	return c.post(fmt.Sprintf("/v2/online/%s/like", strconv.Itoa(id)), map[string]([]string){})
 }
 
 //http://developers.douban.com/wiki/?title=online_v2#unlike
@@ -582,13 +668,13 @@ func (c *Client) NewOnlineDiscussion(target_id int, title, content string) (code
 //http://developers.douban.com/wiki/?title=online_v2#join_list
 //获取用户参加的线上活动列表
 func (c *Client) GetUserPaticipateOnline(user_id int) (code int, resp_content []byte) {
-	return c.get("/v2/online/user_participated/" + strconv.Itoa(id))
+	return c.get("/v2/online/user_participated/" + strconv.Itoa(user_id))
 }
 
 //http://developers.douban.com/wiki/?title=online_v2#owned
 //获取用户创建的线上活动列表
 func (c *Client) GetUserCreateOnline(user_id int) (code int, resp_content []byte) {
-	return c.get("/v2/online/user_created/" + strconv.Itoa(id))
+	return c.get("/v2/online/user_created/" + strconv.Itoa(user_id))
 }
 
 /*
