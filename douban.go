@@ -449,11 +449,17 @@ func (c *Client) NewMovies() (code int, resp_content []byte) {
 	return c.get("/v2/movie/new_movies")
 }
 
+/*
+Music:豆瓣音乐
+URL：http://developers.douban.com/wiki/?title=music_v2
+*/
+
 //http://developers.douban.com/wiki/?title=music_v2#get_music
 func (c *Client) GetMusicById(id int) (code int, resp_content []byte) {
 	return c.get("/v2/music/" + strconv.Itoa(id))
 }
 
+//http://developers.douban.com/wiki/?title=music_v2#get_music_search
 func (c *Client) SearchMusicByKeywords(keywords []string, start, count int) (code int, resp_content []byte) {
 	return c.get(Urlencode("/v2/music/search", map[string]string{
 		"q":     strings.Join(keywords, "+"),
@@ -476,13 +482,30 @@ func (c *Client) GetMusicTagsById(id int) (code int, resp_content []byte) {
 }
 
 //http://developers.douban.com/wiki/?title=music_v2#post_music_review
-func (c *Client) PostMusicReview(id int, title, content string, rating int) (code int, resp_content []byte) {
+//新发音乐评论
+func (c *Client) NewMusicReview(id int, title, content string, rating int) (code int, resp_content []byte) {
 	return c.post("/v2/music/reviews", map[string]([]string){
 		"music":   {strconv.Itoa(id)},
 		"title":   {title},
 		"content": {content},
 		"rating":  {strconv.Itoa(rating)},
 	})
+}
+
+//http://developers.douban.com/wiki/?title=music_v2#put_music_review
+//修改评论
+func (c *Client) UpdateMusicReview(id int, title, content string, rating int) (code int, resp_content []byte) {
+	return c.put("/v2/music/review/"+strconv.Itoa(id), map[string]([]string){
+		"title":   {title},
+		"content": {content},
+		"rating":  {strconv.Itoa(rating)},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=music_v2#delete_music_review
+//删除评论
+func (c *Client) DeleteMusicReview(id int) (code int, resp_content []byte) {
+	return c.delete("/v2/music/review/" + strconv.Itoa(id))
 }
 
 /*
@@ -765,4 +788,87 @@ func (c *Client) GetUserCollectLocations(username string, start, count int) (cod
 		"start": strconv.Itoa(start),
 		"count": strconv.Itoa(count),
 	}))
+}
+
+/*
+ event：豆瓣同城
+ URL：http://developers.douban.com/wiki/?title=event_v2
+*/
+
+//http://developers.douban.com/wiki/?title=event_v2#event_get
+//获取活动
+func (c *Client) GetEventById(id int) (code int, resp_content []byte) {
+	return c.get("/v2/event/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_participants
+//获取参加活动的用户
+func (c *Client) GetEventParticipants(id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/event/%s/participants", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_wishers
+//获取对活动感兴趣的用户
+func (c *Client) GetEventWishers(id int) (code int, resp_content []byte) {
+	return c.get(fmt.Sprintf("/v2/event/%s/wishers", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_user_created
+//获取用户创建的活动
+func (c *Client) GetUserCreateEvents(id int) (code int, resp_content []byte) {
+	return c.get("/v2/event/user_created/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_user_participated
+//获取用户参加的活动
+func (c *Client) GetUserPartiipatedEvent(id int) (code int, resp_content []byte) {
+	return c.get("/v2/event/user_participated/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_user_wished
+//获取用户感兴趣的活动
+func (c *Client) GetUserWishedEvents(id int) (code int, resp_content []byte) {
+	return c.get("/v2/event/user_wished/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_list
+//获取活动列表
+func (c *Client) GetEventList() (code int, resp_content []byte) {
+	return c.get("/v2/event/list")
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#loc_get
+//获取城市
+func (c *Client) GetLocationById(id int) (code int, resp_content []byte) {
+	return c.get("/v2/loc/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#loc_list
+//获取城市列表
+func (c *Client) GetLocationList() (code int, resp_content []byte) {
+	return c.get("/v2/loc/list")
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_participate
+// 参加活动
+func (c *Client) ParticipateEventById(id int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/event/%s/participants", strconv.Itoa(id)), map[string]([]string){})
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_quit
+//不参加活动
+func (c *Client) QuitEventById(id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/event/%s/participants", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_wish
+//对活动感兴趣
+func (c *Client) WishEvent(id int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/event/%s/wishers", strconv.Itoa(id)), map[string]([]string){})
+}
+
+//http://developers.douban.com/wiki/?title=event_v2#event_unwish
+//不感兴趣
+func (c *Client) UnwishEvent(id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/event/%s/wishers", strconv.Itoa(id)))
 }
