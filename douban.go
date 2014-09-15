@@ -872,3 +872,62 @@ func (c *Client) WishEvent(id int) (code int, resp_content []byte) {
 func (c *Client) UnwishEvent(id int) (code int, resp_content []byte) {
 	return c.delete(fmt.Sprintf("/v2/event/%s/wishers", strconv.Itoa(id)))
 }
+
+/*
+note:豆瓣日记
+URL：http://developers.douban.com/wiki/?title=note_v2
+*/
+
+//http://developers.douban.com/wiki/?title=note_v2#add
+//增加一条日记
+func (c *Client) NewNote(title, privacy, can_reply, content, layout_pid string) (code int, resp_content []byte) {
+	return c.post("/v2/notes", map[string]([]string){
+		"title":      {title},
+		"content":    {content},
+		"can_reply":  {can_reply},
+		"privacy":    {privacy},
+		"layout_pid": {layout_pid},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=note_v2#delete
+//删除一条日记
+func (c *Client) DeleteNoteById(id int) (code int, resp_content []byte) {
+	return c.delete("/v2/note/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=note_v2#update
+//更新日记
+func (c *Client) UpdateNoteById(id int, title, privacy, can_reply, content, layout_pid string) (code int, resp_content []byte) {
+	return c.put("/v2/notes/"+strconv.Itoa(id), map[string]([]string){
+		"title":      {title},
+		"content":    {content},
+		"can_reply":  {can_reply},
+		"privacy":    {privacy},
+		"layout_pid": {layout_pid},
+	})
+}
+
+//http://developers.douban.com/wiki/?title=note_v2#get
+//获取一篇日记
+func (c *Client) GetNoteById(id int) (code int, resp_content []byte) {
+	return c.get("/v2/note/" + strconv.Itoa(id))
+}
+
+//http://developers.douban.com/wiki/?title=note_v2#like_note
+//喜欢一条笔记
+func (c *Client) LikeNoteById(id int) (code int, resp_content []byte) {
+	return c.post(fmt.Sprintf("/v2/note/%s/like", strconv.Itoa(id)), map[string]([]string){})
+}
+
+//http://developers.douban.com/wiki/?title=note_v2#unlike_note
+//取消喜欢一条笔记
+func (c *Client) UnlikeNoteById(id int) (code int, resp_content []byte) {
+	return c.delete(fmt.Sprintf("/v2/note/%s/like", strconv.Itoa(id)))
+}
+
+//http://developers.douban.com/wiki/?title=note_v2#get_list
+//获取用户的笔记列表
+func (c *Client) GetUserNoteList(id int) (code int, resp_content []byte) {
+	return c.get("/v2/note/user_created/" + strconv.Itoa(id))
+}
